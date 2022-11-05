@@ -23,6 +23,7 @@ const searchGurusByVin = async (req, res, next) => {
                 '--no-sandbox', 
                 '--disable-setuid-sandbox'
             ],
+            defaultViewport: null,
         });
         let page = await browser.newPage()
         // send an HTTP error back on page error

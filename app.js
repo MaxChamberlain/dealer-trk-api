@@ -5,7 +5,23 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var cors = require('cors');
 var { connectDB } = require('./config/db');
+const puppeteer = require('puppeteer');
 require('dotenv').config();
+
+const test = async()=> {
+  const browser = await puppeteer.launch({
+      headless: true,
+      args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox'
+      ],
+      defaultViewport: null,
+  }); 
+  let page = await browser.newPage()
+  await page.goto('https://google.com')
+  console.log('done')
+}
+test()
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
