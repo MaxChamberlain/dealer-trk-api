@@ -19,7 +19,7 @@ const searchGurusByVin = async (req, res, next) => {
         // send an HTTP error back on page error
         page.on('pageerror', err => {
             console.log('Page error: ' + err.toString());
-            throw new Error(err);asddsf
+            throw new Error(err);
         });
         page.on('error', err => {
             console.log('Page error: ' + err.toString());
