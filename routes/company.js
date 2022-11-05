@@ -4,6 +4,6 @@ var { verifyToken } = require('../middlewares/jwt');
 var { getCompanyDetail, createCompany } = require('../controllers/companies');
 
 router.post('/getone', verifyToken, getCompanyDetail);
-router.post('/create', verifyToken, createCompany);
+router.post('/add', verifyToken, createCompany);
 
 module.exports = router;
