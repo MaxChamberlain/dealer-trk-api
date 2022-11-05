@@ -14,7 +14,7 @@ const searchGurusByVin = async (req, res, next) => {
         return res.status(400).json({ message: 'Invalid VIN' });
     }
     try{
-        const browser = await puppeteer.launch({headless: true});
+        const browser = await puppeteer.launch({args: ['--no-sandbox', '--disable-setuid-sandbox'], headless: true});
         let page = await browser.newPage()
         // send an HTTP error back on page error
         page.on('pageerror', err => {
