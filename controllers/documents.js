@@ -33,8 +33,8 @@ const getDocumentsByCompanyIds = async (req, res) => {
                 SELECT *
                 FROM document d
                 INNER JOIN document_type dt
-                ON d.document_type_id = dt.document_type_id
-                INNER JOIN trip_pad_document tpd
+                ON d.type_id = dt.document_type_id
+                INNER JOIN document_detail tpd
                 ON d.document_id = tpd.document_id
                 INNER JOIN company c
                 ON d.company_id = c.company_id
@@ -44,6 +44,9 @@ const getDocumentsByCompanyIds = async (req, res) => {
             `,
             [company_ids.rows.map(company => company.company_id)]
         );
+        result.rows.forEach(row => {
+            delete row.user_password
+        })
         res.status(200).send(result.rows);
     } catch (err) {
         console.log(err)
@@ -62,7 +65,7 @@ const insertDocument = async (req, res) => {
         const res1 = await pool.query(
             `
                 INSERT INTO document (
-                    document_type_id,
+                    type_id,
                     company_id,
                     created_by_user_id
                 )
@@ -98,17 +101,6 @@ const insertDocument = async (req, res) => {
             return value[0]
         })
         const table = table_type_name.rows[0].document_type_table_name;
-
-        console.log((
-            `
-                INSERT INTO ${table} (
-                    ${columns.join(', ')}, 'document_id'
-                )
-                VALUES (
-                    ${values.join(', ')}, $${parsed.map(value => value[1]).length}
-                )
-            `
-        ))
 
         const res2 = await pool.query(
             `

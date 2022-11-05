@@ -45,7 +45,7 @@ const registerUser = async (req, res) => {
         );
         const jwt = createToken(result.rows[0].user_id)
         // create a cookie that expires in 1 hour
-        res.cookie('dash-auth-tokenjwtgrab', jwt, { maxAge: 3600000, httpOnly: true });
+        res.setHeader('Set-Cookie', `dash-auth-tokenjwtgrab=${jwt}; Max-Age=3600000; HttpOnly; SameSite=None; Secure; Path=/`);
         res.status(200).send(result.rows[0]);
     } catch (err) {
         console.log(err)
@@ -75,8 +75,8 @@ const loginUser = async (req, res) => {
             } else {
                 delete user.user_password
                 const jwt = createToken(result.rows[0].user_id)
-                // create a cookie that expires in 10 hours
-                res.cookie('dash-auth-tokenjwtgrab', jwt, { maxAge: 36000000, httpOnly: true });
+                // create a cookie that expires in 10 hours and path is set to root
+                res.setHeader('Set-Cookie', `dash-auth-tokenjwtgrab=${jwt}; Max-Age=3600000; HttpOnly; SameSite=None; Secure; Path=/`);
                 res.status(200).send(user);
             }
         }

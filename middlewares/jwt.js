@@ -11,7 +11,7 @@ const verifyToken = (req, res, next) => {
         req.user_id = decodedContetnt.payload.id;
         next();
     } catch (err) {
-        res.cookie('dash-auth-tokenjwtgrab', '', { maxAge: 0, httpOnly: true });
+        res.setHeader('Set-Cookie', `dash-auth-tokenjwtgrab=; Max-Age=0; HttpOnly; SameSite=None; Secure; Path=/`);
         res.status(400).send('Invalid Token');
     }
 }

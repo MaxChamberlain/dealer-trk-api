@@ -5,16 +5,17 @@ var {validate} = require('vin-validator');
 const vin = '3TMCZ5AN2NM532235'
 
 const searchGurusByVin = async (req, res, next) => {
-    
     const { VIN, ZIP, PRICE } = req.query;
     const URL = `https://www.cargurus.com/Cars/instantMarketValueFromVIN.action?startUrl=%2FCars%2FinstantMarketValueFromVIN.action&++++++++carDescription.vin%0D%0A=${VIN}`
+    console.log('getting car at ' + URL)
+    
     const isValidVIN = validate(VIN);
     if (!isValidVIN) {
         return res.status(400).json({ message: 'Invalid VIN' });
     }
     try{
         const browser = await puppeteer.launch({headless: true});
-        const page = await browser.newPage()
+        let page = await browser.newPage()
         // send an HTTP error back on page error
         page.on('pageerror', err => {
             console.log('Page error: ' + err.toString());

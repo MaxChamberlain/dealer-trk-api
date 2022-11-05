@@ -16,7 +16,7 @@ var searchRouter = require('./routes/search');
 var app = express();
 
 //set cors to allow access to the api from any domain
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors({ origin: true, credentials: true, exposedHeaders: ['set-cookie'] }));
 
 //set app header for access control allow origin to allow cross origin requests
 const corsDetail = {
@@ -26,7 +26,7 @@ const corsDetail = {
 
 app.use(function(req, res, next) {
   const origin = corsDetail.origin.includes(req.header('origin').toLowerCase()) ? req.headers.origin : corsDetail.default;
-  res.header("Access-Control-Allow-Origin", origin);
+  res.header("Access-Control-Allow-Origin", req.headers.origin);
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
