@@ -6,11 +6,23 @@ var logger = require('morgan');
 var cors = require('cors');
 var { connectDB } = require('./config/db');
 const puppeteer = require('puppeteer');
+const { exec } = require("child_process");
 require('dotenv').config();
 
 const test = async()=> {
+  exec("node ./node_modules/puppeteer/install.js", (error, stdout, stderr) => {
+    if (error) {
+        console.log(`error: ${error.message}`);
+        return;
+    }
+    if (stderr) {
+        console.log(`stderr: ${stderr}`);
+        return;
+    }
+    console.log(`stdout: ${stdout}`);
+});
   const browser = await puppeteer.launch({
-      headless: true,
+      headless: false,
       args: [
           '--no-sandbox',
           '--disable-setuid-sandbox'
