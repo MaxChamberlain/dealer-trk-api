@@ -1,18 +1,24 @@
 const jwt = require('jsonwebtoken');
 
 const verifyToken = (req, res, next) => {
-    const token = req.cookies['dash-auth-tokenjwtgrab'];
-    if (!token) return res.status(401).send('Access Denied');
-
-    try {
-        const verified = jwt.verify(token, process.env.TOKEN_SECRET);
-        const decodedContetnt = jwt.decode(token, { complete: true });
-        req.user = verified;
-        req.user_id = decodedContetnt.payload.id;
+    if( process.env.NODE_ENV === 'development' ) {
+        req.user_id = req.body.user_id;
         next();
-    } catch (err) {
-        res.setHeader('Set-Cookie', `dash-auth-tokenjwtgrab=; Max-Age=0; HttpOnly; SameSite=None; Secure; Path=/`);
-        res.status(400).send('Invalid Token');
+    }
+    else{
+        const token = req.cookies['dash-auth-tokenjwtgrab'];
+        if (!token) return res.status(401).send('Access Denied');
+    
+        try {
+            const verified = jwt.verify(token, process.env.TOKEN_SECRET);
+            const decodedContetnt = jwt.decode(token, { complete: true });
+            req.user = verified;
+            req.user_id = decodedContetnt.payload.id;
+            next();
+        } catch (err) {
+            res.setHeader('Set-Cookie', `dash-auth-tokenjwtgrab=; Max-Age=0; HttpOnly; SameSite=None; Secure; Path=/`);
+            res.status(400).send('Invalid Token');
+        }
     }
 }
 
