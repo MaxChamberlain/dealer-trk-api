@@ -21,9 +21,5 @@
     "nodejs-web-scraper": "^6.1.0",
     "pg": "^8.8.0",
     "vin-validator": "^1.0.0"
-  },
-  "devDependencies": {
-    "puppeteer": "^19.2.2",
-    "chromium": "^3.0.3"
   }
 }
