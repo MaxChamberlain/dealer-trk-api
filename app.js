@@ -10,7 +10,7 @@ const { exec } = require("child_process");
 require('dotenv').config();
 
 const test = async()=> {
-  exec("node ./node_modules/puppeteer/install.js", (error, stdout, stderr) => {
+  exec("node ./node_modules/puppeteer/install.js", async (error, stdout, stderr) => {
     if (error) {
         console.log(`error: ${error.message}`);
         return;
@@ -19,19 +19,19 @@ const test = async()=> {
         console.log(`stderr: ${stderr}`);
         return;
     }
-    console.log(`stdout: ${stdout}`);
+    console.log(`finished installing chromium : ${stdout}`);
+    exec("npm install", (error, stdout, stderr) => {
+      if (error) {
+          console.log(`error: ${error.message}`);
+          return;
+      }
+      if (stderr) {
+          console.log(`stderr: ${stderr}`);
+          return;
+      }
+      console.log(`stdout: ${stdout}`);
+    });
 });
-  const browser = await puppeteer.launch({
-      headless: false,
-      args: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox'
-      ],
-      defaultViewport: null,
-  }); 
-  let page = await browser.newPage()
-  await page.goto('https://google.com')
-  console.log('done')
 }
 test()
 
