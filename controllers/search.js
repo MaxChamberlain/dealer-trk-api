@@ -1,6 +1,8 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 var {validate} = require('vin-validator');
+const axios = require('axios');
+const nhtsa = require('nhtsa');
 
 const vin = '3TMCZ5AN2NM532235'
 
@@ -60,13 +62,20 @@ const searchGurusByVin = async (req, res, next) => {
                 fairPrice,
                 highPrice,
                 overPrice,
-                location: document.querySelector('#pcc-renderSimilarListings div div')?.innerText?.split('Near')[1]?.trim().replace('\\n', '') || 'N/A',
-                vehicle_name: document.querySelector('.cg-listing-body h4 a')?.innerText || 'Error',
             };
         });
 
+        const { data } = await nhtsa.decodeVin(VIN);
+
+        const vehicleDetails = {
+            make: data.Results.find(e => e.VariableId === 26).Value || '',
+            model: data.Results.find(e => e.VariableId === 28).Value || '',
+            year: data.Results.find(e => e.VariableId === 29).Value || '',
+            trim_level: data.Results.find(e => e.VariableId === 38).Value || '',
+        }
+        
         await browser.close()
-        res.status(200).send({VIN, ...prices, PRICE });
+        res.status(200).send({VIN, ...prices, PRICE, vehicleDetails });
     }catch(err){
         console.log('errorr', err)
         res.status(500).send(err);

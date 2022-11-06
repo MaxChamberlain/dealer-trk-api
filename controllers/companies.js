@@ -103,23 +103,28 @@ const addCompanyPermission = async (req, res) => {
                 `,
                 [user_email]
             );
-            const userToAddId = userToAdd.rows[0].user_id;
-            const result = await pool.query(
-                `
-                    INSERT INTO company_authorization (
+            if (userToAdd.rows.length === 0) {
+                res.status(204).send('User not found');
+            }
+            else {
+                const userToAddId = userToAdd.rows[0].user_id;
+                const result = await pool.query(
+                    `
+                        INSERT INTO company_authorization (
+                            company_id,
+                            user_id,
+                            permission_level
+                        )
+                        VALUES ($1, $2, $3)
+                    `,
+                    [
                         company_id,
-                        user_id,
-                        permission_level
-                    )
-                    VALUES ($1, $2, $3)
-                `,
-                [
-                    company_id,
-                    userToAddId,
-                    777
-                ]
-            );
-            res.status(200).send(result.rows[0]);
+                        userToAddId,
+                        777
+                    ]
+                );
+                res.status(200).send(result.rows[0]);
+            }
         }
     }
     catch (err) {
