@@ -1,53 +1,26 @@
 const { getDB } = require('../config/db');
 
-const getDocumentTypes = async (req, res) => {
-    try {
-        const pool = getDB();
-        const result = await pool.query(
-            `
-                SELECT  *
-                FROM document_type
-            `
-        );
-        res.status(200).send(result.rows);
-    } catch (err) {
-        console.log(err)
-        res.status(500).send(err);
-    }
-};
-
 const getDocumentsByCompanyIds = async (req, res) => {
-    const { user_id } = req.body;
+    const { user_id, startDate, endDate} = req.body;
     try {
-        const pool = getDB();
-        const company_ids = await pool.query(
-            `
-                SELECT  company_id
-                FROM company_authorization
-                WHERE user_id = $1
-            `,
-            [user_id]
-        );
-        const result = await pool.query(
-            `
-                SELECT *
-                FROM document d
-                INNER JOIN document_type dt
-                ON d.type_id = dt.document_type_id
-                INNER JOIN document_detail tpd
-                ON d.document_id = tpd.document_id
-                INNER JOIN company c
-                ON d.company_id = c.company_id
-                INNER JOIN users u
-                ON d.created_by_user_id = u.user_id
-                WHERE d.company_id = ANY($1)
-            `,
-            [company_ids.rows.map(company => company.company_id)]
-        );
-        result.rows.forEach(row => {
-            delete row.user_password
-        })
-        res.status(200).send(result.rows);
+        const db = getDB();
+        const companiesRef = db.collection('companies')
+        const companies = await companiesRef.get();
+        const company_ids = companies.docs
+            .filter(e => e.data().authorized_users.find(x => x.user_id === user_id))
+            .map(company => company.id);
+        const documentsRef = db.collection('documents').where('company_id', 'in', company_ids);
+        const documents = await documentsRef.get();
+        const user_ids = documents.docs.map(e => e.data().metadata.created_by_user_id);
+        const users = await db.collection('users').where('__name__', 'in', user_ids).get();
+        res.status(200).send({data: documents.docs
+            .filter(e => {
+                let date = e.data().metadata.created_at
+                date = new Date(date)
+                return date >= new Date(startDate).setHours(0,0,0,0) && date <= new Date(endDate).setHours(23,59,59,999)
+            })
+            .map(doc => doc.data()), 
+            users: users.docs.map(doc => {return {user_id: doc.id, ...doc.data()}})});
     } catch (err) {
         console.log(err)
         res.status(500).send(err);
@@ -56,64 +29,13 @@ const getDocumentsByCompanyIds = async (req, res) => {
 
 const insertDocument = async (req, res) => {
     const { 
-        user_id,
         params,
-        document_type_id
     } = req.body;
     try {
-        const pool = getDB();
-        const res1 = await pool.query(
-            `
-                INSERT INTO document (
-                    type_id,
-                    company_id,
-                    created_by_user_id
-                )
-                VALUES (
-                    $1,
-                    $2,
-                    $3
-                )
-                RETURNING document_id
-            `,
-            [
-                document_type_id,
-                params.head.company_id,
-                user_id
-            ]
-        );
-        const table_type_name = await pool.query(
-            `
-                SELECT document_type_table_name
-                    FROM document_type
-                    WHERE document_type_id = $1
-            `,
-            [document_type_id]
-        );
-        const doc_id = res1.rows[0].document_id;
-        const parsed = Object.keys(params.body).map(key => {
-            return [key, params.body[key]]
-        })
-        const values = parsed.map((value, index) => {
-            return `$${index + 1}`
-        })
-        const columns = parsed.map(value => {
-            return value[0]
-        })
-        const table = table_type_name.rows[0].document_type_table_name;
-
-        const res2 = await pool.query(
-            `
-                INSERT INTO ${table} (
-                    ${columns.join(', ')}, document_id
-                )
-                VALUES (
-                    ${values.join(', ')}, $${parsed.map(value => value[1]).length + 1}
-                )
-            `,
-            [...parsed.map(value => value[1]), doc_id]
-        );
-        res.status(200).send({ message: 'Document created successfully' });
+        const db = getDB();
+        const documentRef = db.collection('documents')
+        const document = await documentRef.add(params);
+        res.status(200).send(document.id);
     } catch (err) {
         console.log(err)
         res.status(500).send(err);
@@ -121,7 +43,6 @@ const insertDocument = async (req, res) => {
 };
 
 module.exports = {
-    getDocumentTypes,
     getDocumentsByCompanyIds,
     insertDocument
 }

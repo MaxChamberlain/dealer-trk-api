@@ -3,21 +3,14 @@ const { getDB } = require('../config/db');
 const getCompanyDetail = async (req, res) => {
     const { user_id } = req;
     try {
-        const pool = getDB();
-        const result = await pool.query(
-            `
-                SELECT DISTINCT c.company_id, c.company_name, c.company_street, c.company_city, c.company_state, c.company_zip, c.company_phone
-                FROM company_authorization ca
-                INNER JOIN company c
-                ON c.company_id = ca.company_id
-                WHERE ca.user_id = $1
-            `,
-            [user_id]
-        );
-        console.log(result.rows)
-        res.status(200).send(result.rows);
-    }
-    catch (err) {
+        const db = getDB();
+        const companiesRef = db.collection('companies')
+        const companies = await companiesRef.get();
+        const company_ids = companies.docs
+            .filter(e => e.data().authorized_users.find(x => x.user_id === user_id))
+            .map(company => {return {...company.data(), company_id: company.id}});
+        res.status(200).send(company_ids);
+    }catch (err) {
         console.log(err)
         res.status(500).send(err);
     }

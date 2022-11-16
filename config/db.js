@@ -1,21 +1,18 @@
-const { Pool } = require('pg');
+const fs = require('firebase-admin');
+const serviceAccount = require('../config/dealertrk-4623d880e149.json');
 
-let pool = null
+let db = null
 
 const connectDB = async () => {
-    pool = new Pool({
-        user: 'MaxChamberlain',
-        host: 'db.bit.io',
-        database: 'MaxChamberlain/cars-consult-test', // public database 
-        password: 'v2_3v4K3_98TTCGjNigSZavEpdGhdmFM', // key from bit.io database page connect menu
-        port: 5432,
-        ssl: true,
+    fs.initializeApp({
+        credential: fs.credential.cert(serviceAccount)
     });
+    db = fs.firestore();
     console.log('Loaded database instance.');
 }
 
 const getDB = () => {
-    return pool;
+    return db;
 }
 
 module.exports = { connectDB, getDB }
