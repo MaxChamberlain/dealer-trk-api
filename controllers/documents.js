@@ -11,7 +11,7 @@ const getDocumentsByCompanyIds = async (req, res) => {
             .map(company => company.id);
         const documentsRef = db.collection('documents').where('company_id', 'in', company_ids);
         const documents = await documentsRef.get();
-        const user_ids = documents.docs.map(e => e.data().metadata.created_by_user_id);
+        const user_ids = [...new Set(documents.docs.map(e => e.data().metadata.created_by_user_id))]
         const users = await db.collection('users').where('__name__', 'in', user_ids).get();
         res.status(200).send({data: documents.docs
             .filter(e => {
