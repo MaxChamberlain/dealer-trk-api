@@ -4,8 +4,6 @@ var {validate} = require('vin-validator');
 const axios = require('axios');
 const nhtsa = require('nhtsa');
 
-const vin = '3TMCZ5AN2NM532235'
-
 const searchGurusByVin = async (req, res, next) => {
     const { VIN, ZIP, PRICE } = req.query;
     const URL = `https://www.cargurus.com/Cars/instantMarketValueFromVIN.action?startUrl=%2FCars%2FinstantMarketValueFromVIN.action&++++++++carDescription.vin%0D%0A=${VIN}`
@@ -48,12 +46,12 @@ const searchGurusByVin = async (req, res, next) => {
         await page.waitForSelector('#pcc-renderSimilarListings')
         const prices = await page.evaluate(() => {
             const zip = document.querySelector('#buyerZip').value
-            const greatPrice = document.querySelector('.cg-priceCheckVerticalScale-great p span').innerText;
-            const goodPrice = document.querySelector('.cg-priceCheckVerticalScale-good p span').innerText;
-            const fairPrice = document.querySelector('.cg-priceCheckVerticalScale-fair p span').innerText;
-            const highPrice = document.querySelector('.cg-priceCheckVerticalScale-poor p span').innerText;
-            const overPrice = document.querySelector('.cg-priceCheckVerticalScale-over p span').innerText;
-            const IMV = document.getElementById('instantMarketValuePrice').innerText;
+            const greatPrice = document.querySelector('.cg-priceCheckVerticalScale-great p span')?.innerText || null;
+            const goodPrice = document.querySelector('.cg-priceCheckVerticalScale-good p span')?.innerText || null;
+            const fairPrice = document.querySelector('.cg-priceCheckVerticalScale-fair p span')?.innerText || null;
+            const highPrice = document.querySelector('.cg-priceCheckVerticalScale-poor p span')?.innerText || null;
+            const overPrice = document.querySelector('.cg-priceCheckVerticalScale-over p span')?.innerText || null;
+            const IMV = document.getElementById('instantMarketValuePrice').innerText || null;
             return {
                 zip,
                 IMV,

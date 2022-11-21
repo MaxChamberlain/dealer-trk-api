@@ -19,7 +19,7 @@ const getDocumentsByCompanyIds = async (req, res) => {
                 date = new Date(date)
                 return date >= new Date(startDate).setHours(0,0,0,0) && date <= new Date(endDate).setHours(23,59,59,999)
             })
-            .map(doc => doc.data()), 
+            .map(doc => { return {...doc.data(), document_id: doc.id} }), 
             users: users.docs.map(doc => {return {user_id: doc.id, ...doc.data()}})});
     } catch (err) {
         console.log(err)
@@ -42,7 +42,31 @@ const insertDocument = async (req, res) => {
     }
 };
 
+const addNotes = async (req, res) => {
+    const {
+        document_id,
+        notes,
+    } = req.body;
+    console.log(document_id, notes)
+    try {
+        const db = getDB();
+        const documentRef = db.collection('documents').doc(document_id);
+        // update the document
+        await documentRef.update({
+            notes,
+        });
+        res.status(200).send('success');
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send(err);
+    }
+};
+
+
 module.exports = {
     getDocumentsByCompanyIds,
-    insertDocument
+    insertDocument, 
+    addNotes,
 }
