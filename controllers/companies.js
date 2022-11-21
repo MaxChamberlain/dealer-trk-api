@@ -18,48 +18,21 @@ const getCompanyDetail = async (req, res) => {
 
 const createCompany = async (req, res) => {
     const { user_id } = req;
-    const { company_name, company_street, company_city, company_state, company_zip, company_phone } = req.body;
+    const { company_name, company_street, company_city, company_state, company_zip, company_phone, company_carg_preference } = req.body;
     try {
-        const pool = getDB();
-        const result = await pool.query(
-            `
-                INSERT INTO company (
-                    company_name,
-                    company_street,
-                    company_city,
-                    company_state,
-                    company_zip,
-                    company_phone
-                )
-                VALUES ($1, $2, $3, $4, $5, $6)
-                RETURNING company_id
-            `,
-            [
-                company_name,
-                company_street,
-                company_city,
-                company_state,
-                company_zip,
-                company_phone
-            ]
-        );
-        const company_id = result.rows[0].company_id;
-        const result2 = await pool.query(
-            `
-                INSERT INTO company_authorization (
-                    company_id,
-                    user_id,
-                    permission_level
-                )
-                VALUES ($1, $2, $3)
-            `,
-            [
-                company_id,
-                user_id,
-                777
-            ]
-        );
-        res.status(200).send(result.rows[0]);
+        const db = getDB();
+        const companiesRef = db.collection('companies');
+        const newCompany = await companiesRef.add({
+            company_name,
+            company_street,
+            company_city,
+            company_state,
+            company_zip,
+            company_phone,
+            company_carg_preference,
+            authorized_users: [{user_id}]
+        });
+        res.status(200).send(newCompany.id);
     }
     catch (err) {
         console.log(err)
@@ -71,63 +44,83 @@ const addCompanyPermission = async (req, res) => {
     const { user_id } = req;
     const { company_id, user_email } = req.body;
     try {
-        const pool = getDB();
-        const hasPermission = await pool.query(
-            `  
-                SELECT *
-                FROM company_authorization
-                WHERE user_id = $1
-                AND company_id = $2
-            `,
-            [
-                user_id,
-                company_id
-            ]
-        );
-        if (hasPermission.rows.length === 0) {
-            res.status(403).send('You do not have permission to add permissions to this company');
+        const db = getDB();
+        const companiesRef = db.collection('companies');
+        const usersRef = db.collection('users');
+        const company = await companiesRef.doc(company_id).get();
+        const companyData = company.data();
+        const user = await usersRef.where('user_email', '==', user_email).get();
+        const userData = user.docs[0].id;
+        const newAuthorizedUsers = [...companyData.authorized_users, {user_id: userData}];
+        if(!newAuthorizedUsers.find(e => e.user_id === user_id)) {
+            await companiesRef.doc(company_id).update({authorized_users: newAuthorizedUsers});
         }
-        else {
-            const userToAdd = await pool.query(
-                `
-                    SELECT user_id
-                    FROM users
-                    WHERE user_email = $1
-                `,
-                [user_email]
-            );
-            if (userToAdd.rows.length === 0) {
-                res.status(204).send('User not found');
-            }
-            else {
-                const userToAddId = userToAdd.rows[0].user_id;
-                const result = await pool.query(
-                    `
-                        INSERT INTO company_authorization (
-                            company_id,
-                            user_id,
-                            permission_level
-                        )
-                        VALUES ($1, $2, $3)
-                    `,
-                    [
-                        company_id,
-                        userToAddId,
-                        777
-                    ]
-                );
-                res.status(200).send(result.rows[0]);
-            }
-        }
+        res.status(200).send('User added to company');
     }
     catch (err) {
         console.log(err)
-        res.status(500).send(err);
+        res
+            .status(500)
+            .send(err);
+    }
+};
+
+const updateCompany = async (req, res) => {
+    const { user_id } = req;
+    const { company_id, company_name, company_street, company_city, company_state, company_zip, company_phone, company_carg_preference } = req.body;
+    try {
+        const db = getDB();
+        const companiesRef = db.collection('companies');
+        const company = await companiesRef.doc(company_id)
+        company.update({
+            company_name,
+            company_street,
+            company_city,
+            company_state,
+            company_zip,
+            company_phone,
+            company_carg_preference
+        });
+        res.status(200).send('Company updated');
+    }
+    catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send(err);
+    }
+};
+
+const getUsersInCompany = async (req, res) => {
+    const { user_id } = req;
+    const { company_id } = req.body;
+    try {
+        const db = getDB();
+        const companiesRef = db.collection('companies');
+        const usersRef = db.collection('users');
+        const company = await companiesRef.doc(company_id).get();
+        const companyData = company.data();
+        const users = await usersRef.get();
+        const usersInCompany = users.docs
+            .filter(e => companyData.authorized_users.find(x => x.user_id === e.id))
+            .map(user => {return {...user.data(), user_id: user.id}});
+        usersInCompany.forEach(user => {
+            delete user.user_password;
+        });
+        res.status(200).send(usersInCompany);
+    }
+    catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send(err);
     }
 };
 
 module.exports = {
     getCompanyDetail,
     createCompany,
-    addCompanyPermission
+    addCompanyPermission,
+    updateCompany,
+    getUsersInCompany
 }

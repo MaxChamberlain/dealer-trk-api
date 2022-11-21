@@ -47,7 +47,6 @@ const addNotes = async (req, res) => {
         document_id,
         notes,
     } = req.body;
-    console.log(document_id, notes)
     try {
         const db = getDB();
         const documentRef = db.collection('documents').doc(document_id);
