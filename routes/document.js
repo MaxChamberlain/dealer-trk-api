@@ -3,9 +3,9 @@ var router = express.Router();
 var { verifyToken } = require('../middlewares/jwt');
 var { getDocumentsByCompanyIds, getDocumentsByCompanyId, insertDocument, addNotes } = require('../controllers/documents');
 
-router.post('/getbycompanyids', getDocumentsByCompanyIds);
-router.post('/getbycompanyid', getDocumentsByCompanyId);
-router.post('/insert', insertDocument);
-router.post('/addnotes', addNotes);
+router.post('/getbycompanyids', verifyToken, getDocumentsByCompanyIds);
+router.post('/getbycompanyid', verifyToken, getDocumentsByCompanyId);
+router.post('/insert', verifyToken, insertDocument);
+router.post('/addnotes', verifyToken, addNotes);
 
 module.exports = router;

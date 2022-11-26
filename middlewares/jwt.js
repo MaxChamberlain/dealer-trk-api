@@ -1,14 +1,13 @@
 const jwt = require('jsonwebtoken');
 
 const verifyToken = (req, res, next) => {
-    if( process.env.NODE_ENV === 'development' ) {
-        req.user_id = req.body.user_id;
-        next();
-    }
-    else{
+    // if( process.env.NODE_ENV === 'development' ) {
+    //     req.user_id = 'eGwtgWhVrZqWQfTtgzXT';
+    //     next();
+    // }
+    // else{
         const token = req.cookies['dash-auth-tokenjwtgrab'];
-        if (!token) return res.status(401).send('Access Denied');
-    
+        if (!token) return res.status(403).send('Access Denied');
         try {
             const verified = jwt.verify(token, process.env.TOKEN_SECRET);
             const decodedContetnt = jwt.decode(token, { complete: true });
@@ -19,7 +18,7 @@ const verifyToken = (req, res, next) => {
             res.setHeader('Set-Cookie', `dash-auth-tokenjwtgrab=; Max-Age=0; HttpOnly; SameSite=None; Secure; Path=/`);
             res.status(400).send('Invalid Token');
         }
-    }
+    // }
 }
 
 const createToken = (user_id) => {

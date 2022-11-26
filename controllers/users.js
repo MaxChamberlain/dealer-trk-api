@@ -110,8 +110,14 @@ const getUserDetails = async (req, res) => {
     }
 };
 
+const logout = async (req, res) => {
+    res.setHeader('Set-Cookie', `dash-auth-tokenjwtgrab=; Max-Age=0; HttpOnly; SameSite=None; Secure; Path=/`);
+    res.status(200).send('Logged out');
+};
+
 module.exports = {
     registerUser,
     loginUser,
-    getUserDetails
+    getUserDetails,
+    logout
 }

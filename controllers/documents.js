@@ -1,7 +1,8 @@
 const { getDB } = require('../config/db');
 
 const getDocumentsByCompanyIds = async (req, res) => {
-    const { user_id, startDate, endDate} = req.body;
+    const { user_id } = req
+    const { startDate, endDate} = req.body;
     try {
         const db = getDB();
         const companiesRef = db.collection('companies')
@@ -64,7 +65,8 @@ const addNotes = async (req, res) => {
 };
 
 const getDocumentsByCompanyId = async (req, res) => {
-    const { company_id, user_id, startDate, endDate } = req.body;
+    const { user_id } = req
+    const { company_id, startDate, endDate } = req.body;
     try {
         const db = getDB();
         const companiesRef = await  db.collection('companies').doc(company_id).get();
