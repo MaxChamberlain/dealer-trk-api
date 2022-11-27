@@ -12,7 +12,7 @@ const getDocumentsByCompanyIds = async (req, res) => {
             .map(company => company.id);
         const documentsRef = db.collection('documents').where('company_id', 'in', company_ids);
         const documents = await documentsRef.get();
-        const user_ids = [...new Set(documents.docs.map(e => e.data().metadata.created_by_user_id))]
+        const user_ids = [...new Set(documents.docs.map(e => e.data().metadata.created_by_user_id))].filter(e => e)
         const users = await db.collection('users').where('__name__', 'in', user_ids).get();
         res.status(200).send({data: documents.docs
             .filter(e => {
@@ -66,8 +66,10 @@ const addNotes = async (req, res) => {
 
 const getDocumentsByCompanyId = async (req, res) => {
     const { user_id } = req
-    const { company_id, startDate, endDate } = req.body;
+    let { company_id, startDate, endDate } = req.body;
     try {
+        endDate = new Date(endDate).setHours(23,59,59,999)
+        startDate = new Date(startDate).setHours(0,0,0,0)
         const db = getDB();
         const companiesRef = await  db.collection('companies').doc(company_id).get();
         if (!companiesRef) {
@@ -82,7 +84,10 @@ const getDocumentsByCompanyId = async (req, res) => {
         if(!user_ids.includes(user_id)) {
             return res.status(401).send('Unauthorized');
         }
-        res.status(200).send(documents.docs.map(doc => { return {...doc.data(), document_id: doc.id} }));
+        res.status(200).send(documents.docs
+            .filter(e => new Date(e.data().metadata.created_at) >= new Date(startDate) && new Date(e.data().metadata.created_at) <= new Date(endDate))
+            .map(doc => { return {...doc.data(), document_id: doc.id} })
+        );
     } catch (err) {
         console.log(err)
         res
