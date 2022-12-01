@@ -22,7 +22,8 @@ const verifyToken = (req, res, next) => {
 }
 
 const createToken = (user_id) => {
-    const token = jwt.sign({ id: user_id }, process.env.TOKEN_SECRET);
+    // sign a new jwt that lasta 12 hours
+    const token = jwt.sign({ id: user_id }, process.env.TOKEN_SECRET, { expiresIn: '18h' });
     return token;
 }
 

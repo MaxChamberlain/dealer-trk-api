@@ -51,9 +51,9 @@ const addCompanyPermission = async (req, res) => {
         const companyData = company.data();
         const user = await usersRef.where('user_email', '==', user_email).get();
         const userData = user.docs[0].id;
-        const newAuthorizedUsers = [...companyData.authorized_users, {user_id: userData}];
-        if(!newAuthorizedUsers.find(e => e.user_id === user_id)) {
-            await companiesRef.doc(company_id).update({authorized_users: newAuthorizedUsers});
+        const newAuthorizedUsers = companyData.authorized_users;
+        if(!newAuthorizedUsers.find(e => e.user_id === userData)) {
+            await companiesRef.doc(company_id).update({authorized_users: [...newAuthorizedUsers, {user_id: userData}]});
         }
         res.status(200).send('User added to company');
     }
