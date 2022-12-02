@@ -80,10 +80,6 @@ const getDocumentsByCompanyId = async (req, res) => {
         }
         const documentsRef = db.collection('documents').where('company_id', '==', company_id);
         const documents = await documentsRef.get();
-        const user_ids = [...new Set(documents.docs.map(e => e.data().metadata.created_by_user_id))]
-        if(!user_ids.includes(user_id)) {
-            return res.status(401).send('Unauthorized');
-        }
         res.status(200).send(documents.docs
             .filter(e => new Date(e.data().metadata.created_at) >= new Date(startDate) && new Date(e.data().metadata.created_at) <= new Date(endDate))
             .map(doc => { return {...doc.data(), document_id: doc.id} })
