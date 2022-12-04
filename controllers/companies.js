@@ -18,7 +18,7 @@ const getCompanyDetail = async (req, res) => {
 
 const createCompany = async (req, res) => {
     const { user_id } = req;
-    const { company_name, company_street, company_city, company_state, company_zip, company_phone, company_carg_preference } = req.body;
+    const { company_name, company_street, company_city, company_state, company_zip, company_phone, company_carg_preference, company_working_days } = req.body;
     try {
         const db = getDB();
         const companiesRef = db.collection('companies');
@@ -30,7 +30,8 @@ const createCompany = async (req, res) => {
             company_zip,
             company_phone,
             company_carg_preference,
-            authorized_users: [{user_id}]
+            authorized_users: [{user_id}],
+            company_working_days
         });
         res.status(200).send(newCompany.id);
     }
@@ -67,7 +68,7 @@ const addCompanyPermission = async (req, res) => {
 
 const updateCompany = async (req, res) => {
     const { user_id } = req;
-    const { company_id, company_name, company_street, company_city, company_state, company_zip, company_phone, company_carg_preference } = req.body;
+    const { company_id, company_name, company_street, company_city, company_state, company_zip, company_phone, company_carg_preference, company_working_days } = req.body;
     try {
         const db = getDB();
         const companiesRef = db.collection('companies');
@@ -79,7 +80,8 @@ const updateCompany = async (req, res) => {
             company_state,
             company_zip,
             company_phone,
-            company_carg_preference
+            company_carg_preference,
+            company_working_days
         });
         res.status(200).send('Company updated');
     }
