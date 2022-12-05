@@ -92,9 +92,32 @@ const getDocumentsByCompanyId = async (req, res) => {
     }
 };
 
+const changeDocument = async (req, res) => {
+    const {
+        document_id,
+        params
+    } = req.body;
+    try {
+        const db = getDB();
+        const documentRef = db.collection('documents').doc(document_id);
+        const data = await documentRef.get()
+        const document = data.data()
+        document.data.vehicle.v_source = params.v_source
+        document.metadata.updated_at = new Date().toISOString()
+        documentRef.update(document)
+        res.status(200).send('success');
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send(err);
+    }
+};
+
 module.exports = {
     getDocumentsByCompanyIds,
     insertDocument, 
     addNotes,
-    getDocumentsByCompanyId
+    getDocumentsByCompanyId,
+    changeDocument,
 }
