@@ -114,10 +114,28 @@ const changeDocument = async (req, res) => {
     }
 };
 
+const deleteDocument = async (req, res) => {
+    const { 
+        document_id,
+    } = req.body;
+    try {
+        const db = getDB();
+        const documentRef = db.collection('documents').doc(document_id);
+        await documentRef.delete();
+        res.status(200).send('success');
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send(err);
+    }
+};
+
 module.exports = {
     getDocumentsByCompanyIds,
     insertDocument, 
     addNotes,
     getDocumentsByCompanyId,
     changeDocument,
+    deleteDocument,
 }
