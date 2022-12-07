@@ -1,9 +1,9 @@
 const fs = require('firebase-admin');
-const serviceAccount = require('../config/dealertrk-4623d880e149.json');
 
 let db = null
 
 const connectDB = async () => {
+    const serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT)
     fs.initializeApp({
         credential: fs.credential.cert(serviceAccount)
     });
