@@ -131,6 +131,56 @@ const deleteDocument = async (req, res) => {
     }
 };
 
+const customUpdateVehicle = async (req, res) => {
+    const {
+        document_id,
+        v_vehicle
+    } = req.body;
+    try {
+        const db = getDB();
+        const documentRef = db.collection('documents').doc(document_id);
+        const data = await documentRef.get()
+        const document = data.data()
+        document.data.vehicle.v_vehicle = v_vehicle
+        document.metadata.updated_at = new Date().toISOString()
+        documentRef.update(document)
+        res.status(200).send('success');
+    } catch (err) {
+        console.log(err)
+        res 
+            .status(500)
+            .send(err);
+    }
+}
+
+const customUpdateCargurus = async (req, res) => {
+    const {
+        document_id,
+        v_final_carg_h_options,
+        v_final_carg_h,
+        v_imv
+    } = req.body;
+    try {
+        const db = getDB();
+        const documentRef = db.collection('documents').doc(document_id);
+        const data = await documentRef.get()
+        const document = data.data()
+        document.data.vehicle.v_final_carg_h_options = v_final_carg_h_options
+        document.data.vehicle.v_final_carg_h = v_final_carg_h
+        document.data.vehicle.v_imv = v_imv
+        document.metadata.updated_at = new Date().toISOString()
+        documentRef.update(document)
+        res.status(200).send('success');
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send(err);
+    }
+}
+
+
+
 module.exports = {
     getDocumentsByCompanyIds,
     insertDocument, 
@@ -138,4 +188,6 @@ module.exports = {
     getDocumentsByCompanyId,
     changeDocument,
     deleteDocument,
+    customUpdateVehicle,
+    customUpdateCargurus,
 }
