@@ -8,16 +8,18 @@ module.exports = (io) => {
         console.log('connected');
         const { company_id } = socket.handshake.query;
         socket.join(company_id);
+        
+        if(!cellsBeingEditted[company_id]) cellsBeingEditted[company_id] = []
+        setTimeout(() => socket.emit('init', cellsBeingEditted[company_id]), 500)
 
-        socket.on('startEditing', (data) => {
-            if(!cellsBeingEditted[company_id]) cellsBeingEditted[company_id] = []
-            cellsBeingEditted[company_id].push(data.id)
-            io.to(company_id).emit('startEditing', data);
+        socket.on('startEditing', (data, color) => {
+            cellsBeingEditted[company_id].push(data)
+            io.to(company_id).emit('startEditing', cellsBeingEditted[company_id], color || '#ffb800');
         });
 
         socket.on('stopEditing', (data) => {
-            cellsBeingEditted[company_id] = cellsBeingEditted[company_id].filter(id => id !== data.id)
-            io.to(company_id).emit('stopEditing', data);
+            cellsBeingEditted[company_id] = cellsBeingEditted[company_id].filter(item => item.id !== data.id)
+            io.to(company_id).emit('stopEditing', cellsBeingEditted[company_id]);
         });
 
         socket.on('cellChangeCommit', (data) => {
@@ -35,23 +37,22 @@ module.exports = (io) => {
                             case 'col1': newData.data.vehicle.v_stock_no = data.params[changed]; break;
                             case 'col2': newData.data.vehicle.v_vehicle = data.params[changed]; break;
                             case 'col3': newData.data.vehicle.v_vin_no = data.params[changed]; break;
-                            case 'col4': newData.data.vehicle.v_is_certified = data.params[changed]; break;
-                            case 'col5': newData.data.vehicle.v_margin = data.params[changed]; break;
-                            case 'col6': newData.data.vehicle.v_days = data.params[changed]; break;
+                            case 'col4': newData.data.vehicle.v_is_certified = data.params[changed] === 'Y' ? 'N' : 'Y'; break;
+                            case 'col5': newData.data.vehicle.v_margin = isNaN(parseInt(data.params[changed])) ? newData.data.vehicle.v_margin : parseInt(data.params[changed]); break;
+                            case 'col6': newData.data.vehicle.v_days = !(isNaN(parseInt(data.params[changed]) && parseInt(data.params[changed]) >= 0)) ? newData.data.vehicle.v_days : parseInt(data.params[changed]); break;
                             case 'col7': newData.data.vehicle.v_source = data.params[changed]; break;
-                            case 'col8': newData.data.vehicle.v_initial_mmr = data.params[changed]; break;
-                            case 'col9': newData.data.vehicle.v_final_mmr = data.params[changed]; break;
-                            case 'col10': newData.data.vehicle.v_initial_carg_h = data.params[changed]; break; 
-                            case 'col11': newData.data.vehicle.v_final_carg_h = data.params[changed]; break;
-                            case 'col12': newData.data.vehicle.v_start_price = data.params[changed]; break;
-                            case 'col13': newData.data.vehicle.v_sell_price = data.params[changed]; break;
-                            case 'col14': newData.data.vehicle.v_market_percent = data.params[changed]; break;
+                            case 'col8': newData.data.vehicle.v_initial_mmr = isNaN(parseInt(data.params[changed])) ? newData.data.vehicle.v_initial_mmr : parseInt(data.params[changed]); break;
+                            case 'col9': newData.data.vehicle.v_final_mmr = isNaN(parseInt(data.params[changed])) ? newData.data.vehicle.v_final_mmr : parseInt(data.params[changed]); break;
+                            case 'col10': newData.data.vehicle.v_initial_carg_h = isNaN(parseInt(data.params[changed])) ? newData.data.vehicle.v_initial_carg_h : parseInt(data.params[changed]); break;
+                            case 'col11': newData.data.vehicle.v_final_carg_h = isNaN(parseInt(data.params[changed])) ? newData.data.vehicle.v_final_carg_h : parseInt(data.params[changed]); break;
+                            case 'col12': newData.data.vehicle.v_start_price = isNaN(parseInt(data.params[changed])) ? newData.data.vehicle.v_start_price : parseInt(data.params[changed]); break;
+                            case 'col13': newData.data.vehicle.v_sell_price = isNaN(parseInt(data.params[changed])) ? newData.data.vehicle.v_sell_price : parseInt(data.params[changed]); break;
+                            case 'col14': newData.data.vehicle.v_market_percent = isNaN(parseInt(data.params[changed])) ? newData.data.vehicle.v_market_percent : parseInt(data.params[changed]); break;
                             case 'col15': newData.data.trade.t_vehicle = data.params[changed]; break;
-                            case 'col16': newData.metadata.created_at = data.params[changed]; break;
+                            case 'col16': newData.metadata.created_at = isNaN(Date.parse(data.params[changed])) ? newData.metadata.created_at : new Date(data.params[changed]).toLocaleDateString('en-US'); break;
                             case 'col17': newData.notes = data.params[changed]; break;
                         }
                         db.collection('documents').doc(data.params.id).set(newData).then(() => {
-                            console.log(newData)
                             io.to(company_id).emit('cellChangeCommit', {
                                 ...newData.data?.vehicle,
                                 ...newData.data?.trade,
