@@ -7,6 +7,7 @@ var cors = require('cors');
 var { connectDB } = require('./config/db');
 const puppeteer = require('puppeteer');
 const { exec } = require("child_process");
+const { verifyToken } = require('./middlewares/jwt');
 require('dotenv').config();
 
 const test = async()=> {
@@ -94,4 +95,12 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-module.exports = app;
+// require socket.io
+const io = require('socket.io')({
+  cors: {
+    origin: '*',
+  }
+}); //<------
+require('./socket')(io)   
+
+module.exports = { app, io }; 
