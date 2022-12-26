@@ -179,7 +179,24 @@ const customUpdateCargurus = async (req, res) => {
     }
 }
 
-
+const search = async (req, res) => {
+    const { user_id } = req
+    let { v_stock_no } = req.body;
+    try {
+        const db = getDB();
+        const docRef = await db.collection('documents').where('data.vehicle.v_stock_no', '==', v_stock_no).get();
+        if (!docRef) {
+            return res.status(304).send('Document not found');
+        }
+        const document = docRef.docs[0].data()
+        res.status(200).send(document);
+    } catch (err) {
+        console.log(err)
+        res
+            .status(500)
+            .send(err);
+    }
+}
 
 module.exports = {
     getDocumentsByCompanyIds,
@@ -190,4 +207,5 @@ module.exports = {
     deleteDocument,
     customUpdateVehicle,
     customUpdateCargurus,
+    search,
 }
