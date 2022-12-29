@@ -27,6 +27,7 @@ module.exports = (io) => {
             }
         });
 
+
         socket.on('cellChangeCommit', (data) => cellChangeCommit(data, io, company_id))
 
 		socket.on('disconnect', (user) => {
@@ -99,23 +100,33 @@ const cellChangeCommit = (data, io, company_id) => {
                         }
                     }
                     switch(changed){
-                        case 'col1': newData.data.vehicle.v_stock_no = data.params[changed]; break;
-                        case 'col2': newData.data.vehicle.v_vehicle = data.params[changed]; break;
-                        case 'col3': newData.data.vehicle.v_vin_no = data.params[changed]; break;
-                        case 'col4': newData.data.vehicle.v_is_certified = data.params[changed].toUpperCase() === 'Y' ? true : false; break;
-                        case 'col5': newData.data.vehicle.v_margin = isNaN(parseInt(data.params[changed])) ? newData.data.vehicle.v_margin : parseInt(data.params[changed]); break;
-                        case 'col6': newData.data.vehicle.v_days = (isNaN(parseInt(data.params[changed])) || parseInt(data.params[changed]) < 0) ? newData.data.vehicle.v_days : parseInt(data.params[changed]); break;
-                        case 'col7': newData.data.vehicle.v_source = data.params[changed]; break;
-                        case 'col8': newData.data.vehicle.v_initial_mmr = isNaN(parseInt(data.params[changed])) ? newData.data.vehicle.v_initial_mmr : parseInt(data.params[changed]); break;
-                        case 'col9': newData.data.vehicle.v_final_mmr = isNaN(parseInt(data.params[changed])) ? newData.data.vehicle.v_final_mmr : parseInt(data.params[changed]); break;
-                        case 'col10': newData.data.vehicle.v_initial_carg_h = isNaN(parseInt(data.params[changed])) ? newData.data.vehicle.v_initial_carg_h : parseInt(data.params[changed]); break;
-                        case 'col11': newData.data.vehicle.v_final_carg_h = isNaN(parseInt(data.params[changed])) ? newData.data.vehicle.v_final_carg_h : parseInt(data.params[changed]); break;
-                        case 'col12': newData.data.vehicle.v_start_price = isNaN(parseInt(data.params[changed])) ? newData.data.vehicle.v_start_price : parseInt(data.params[changed]); break;
-                        case 'col13': newData.data.vehicle.v_sell_price = isNaN(parseInt(data.params[changed])) ? newData.data.vehicle.v_sell_price : parseInt(data.params[changed]); break;
-                        case 'col14': newData.data.vehicle.v_market_percent = isNaN(parseInt(data.params[changed])) ? newData.data.vehicle.v_market_percent : parseInt(data.params[changed]); break;
-                        case 'col15': newData.data.trade.t_vehicle = data.params[changed]; break;
-                        case 'col16': newData.metadata.created_at = isNaN(Date.parse(data.params[changed])) ? newData.metadata.created_at : new Date(data.params[changed]).toLocaleDateString('en-US'); break;
-                        case 'col17': newData.notes = data.params[changed]; break;
+                        case 'v_stock_no': newData.data.vehicle.v_stock_no = data.params[changed]; break;
+                        case 'v_vehicle': newData.data.vehicle.v_vehicle = data.params[changed]; break;
+                        case 'v_vin_no': newData.data.vehicle.v_vin_no = data.params[changed]; break;
+                        case 'v_is_certified': newData.data.vehicle.v_is_certified = data.params[changed].toUpperCase() === 'Y' ? true : false; break;
+                        case 'v_margin': newData.data.vehicle.v_margin = isNaN(parseInt(data.params[changed])) ? newData.data.vehicle.v_margin : parseInt(data.params[changed]); break;
+                        case 'v_days': newData.data.vehicle.v_days = (isNaN(parseInt(data.params[changed])) || parseInt(data.params[changed]) < 0) ? newData.data.vehicle.v_days : parseInt(data.params[changed]); break;
+                        case 'v_source': newData.data.vehicle.v_source = data.params[changed]; break;
+                        case 'v_initial_mmr': newData.data.vehicle.v_initial_mmr = isNaN(parseInt(data.params[changed])) ? newData.data.vehicle.v_initial_mmr : parseInt(data.params[changed]); break;
+                        case 'v_final_mmr': newData.data.vehicle.v_final_mmr = isNaN(parseInt(data.params[changed])) ? newData.data.vehicle.v_final_mmr : parseInt(data.params[changed]); break;
+                        case 'v_initial_carg_h': newData.data.vehicle.v_initial_carg_h = isNaN(parseInt(data.params[changed])) ? newData.data.vehicle.v_initial_carg_h : parseInt(data.params[changed]); break;
+                        case 'v_final_carg_h': newData.data.vehicle.v_final_carg_h = isNaN(parseInt(data.params[changed])) ? newData.data.vehicle.v_final_carg_h : parseInt(data.params[changed]); break;
+                        case 'v_start_price': newData.data.vehicle.v_start_price = isNaN(parseInt(data.params[changed])) ? newData.data.vehicle.v_start_price : parseInt(data.params[changed]); break;
+                        case 'v_sell_price': newData.data.vehicle.v_sell_price = isNaN(parseInt(data.params[changed])) ? newData.data.vehicle.v_sell_price : parseInt(data.params[changed]); break;
+                        case 'v_market_percent': newData.data.vehicle.v_market_percent = isNaN(parseInt(data.params[changed])) ? newData.data.vehicle.v_market_percent : parseInt(data.params[changed]); break;
+                        case 'v_trade': 
+                            newData.data.trade.t_vehicle = data.params[changed]; 
+                            newData.data.vehicle.v_is_trade = (data.params[changed] && data.params[changed].length > 0) ? true : false;
+                            break;
+                        case 'date': newData.metadata.created_at = isNaN(Date.parse(data.params[changed])) ? newData.metadata.created_at : new Date(data.params[changed]).toLocaleDateString('en-US'); break;
+                        case 'notes': newData.notes = data.params[changed]; break;
+                        case 'v_acv': newData.data.vehicle.v_acv = isNaN(parseInt(data.params[changed])) ? newData.data.vehicle.v_acv : parseInt(data.params[changed]); break;
+                        case 't_vin_no': newData.data.trade.t_vin_no = data.params[changed]; break;
+                        case 'v_sales_mgr': newData.data.v_sales_mgr = data.params[changed]; break;
+                        case 'v_customer': newData.data.v_customer = data.params[changed]; break;
+                        case 'v_miles': newData.data.vehicle.v_miles = isNaN(parseInt(data.params[changed])) ? newData.data.vehicle.v_miles : parseInt(data.params[changed]); break;
+                        case 'rollback': newData.rollback = data.params[changed]; break;
+                        
                     }
                     db.collection('documents').doc(data.params.id).set(newData).then(() => {
                         io.to(company_id).emit('cellChangeCommit', {
@@ -123,7 +134,7 @@ const cellChangeCommit = (data, io, company_id) => {
                             ...newData.data?.trade,
                             v_is_certified: newData.data?.vehicle?.v_is_certified ? 'Y' : 'N',
                             t_vehicle: newData.data?.trade?.t_vehicle || '',
-                            v_vehicle: newData.data?.vehicle?.v_vehicle || '',
+                            v_vehicle: newData.data?.vehicle?.v_vehicle ? `${newData.data?.vehicle?.v_vehicle}` : `${newData.data?.vehicle?.v_year || ''} ${newData.data?.vehicle?.v_make || ''} ${newData.data?.vehicle?.v_model || ''} ${newData.data?.vehicle?.v_package || ''}`,
                             v_market_percent: newData.data?.vehicle?.v_market_percent || '',
                             v_sell_price: newData.data?.vehicle?.v_sell_price || '',
                             v_start_price: newData.data?.vehicle?.v_start_price || '',
@@ -139,7 +150,14 @@ const cellChangeCommit = (data, io, company_id) => {
                             created_at: new Date(newData.metadata.created_at).toLocaleDateString('en-US'),
                             document_id: newData.document_id,
                             notes: newData.notes || '',
+                            v_acv: newData.data?.vehicle?.v_acv || '0',
+                            t_vin_no: newData.data?.trade?.t_vin_no || '',
+                            v_sales_mgr: newData.data?.v_sales_mgr || '',
+                            v_customer: newData.data?.v_customer || '',
+                            v_miles: newData.data?.vehicle?.v_miles || '0',
+                            rollback: newData?.rollback || '',
                         });
+
                     })
                 }
             })
@@ -159,30 +177,34 @@ const insertNew = (data, company_id, io) => {
         let constructedObject = {
             data:{
                 vehicle: {
-                    v_vehicle: data.col2 || '',
-                    v_vin_no: data.col3 || '',
-                    v_stock_no: data.col1 || '',
-                    v_source: data.col7 || '',
-                    v_initial_mmr: data.col8 || '',
-                    v_final_mmr: data.col9 || '',
-                    v_initial_carg_h: data.col10 || '',
-                    v_final_carg_h: data.col11 || '',
-                    v_start_price: data.col12 || '',
-                    v_sell_price: data.col13 || '',
-                    v_market_percent: data.col14 || '',
-                    v_days: data.col6 || '',
-                    v_margin: data.col5 || '',
-                    v_is_certified: data.col4?.toUpperCase() === 'Y' ? true : false || 'N',
+                    v_vehicle: data.v_vehicle || '',
+                    v_vin_no: data.v_vin_no || '',
+                    v_stock_no: data.v_stock_no || '',
+                    v_source: data.v_source || '',
+                    v_initial_mmr: data.v_initial_mmr || '',
+                    v_final_mmr: data.v_final_mmr || '',
+                    v_initial_carg_h: data.v_initial_carg_h || '',
+                    v_final_carg_h: data.v_final_carg_h || '',
+                    v_start_price: data.v_start_price || '',
+                    v_sell_price: data.v_sell_price || '',
+                    v_market_percent: data.v_market_percent || '',
+                    v_days: data.v_days || '',
+                    v_margin: data.v_margin || '',
+                    v_is_certified: data.v_is_certified?.toUpperCase() === 'Y' ? true : false || 'N',
+                    v_customer: data.v_customer || '',
+                    v_sales_mgr: data.v_sales_mgr || '',
+                    v_acv: data.v_acv || '',
+                    v_miles: isNaN(parseInt(data.v_miles)) ? 0 : parseInt(data.v_miles),
                 },
                 trade: {
-                    t_vehicle: data.col15 || '',
+                    t_vehicle: data.v_trade || '',
                 },
                 document_type: 'Trip Pad'
             },
             metadata: {
                 created_at: new Date().toLocaleDateString('en-US'),
             },
-            notes: data.col17 || data.notes || '',
+            notes: data.notes || data.notes || '',
             company_id: company_id,
         }
 
@@ -211,6 +233,11 @@ const insertNew = (data, company_id, io) => {
                     created_at: new Date(doc.data().metadata.created_at).toLocaleDateString('en-US'),
                     document_id: docRef.id,
                     notes: doc.data().notes || '',
+                    v_acv: doc.data().data?.vehicle?.v_acv || '',
+                    t_vin_no: doc.data().data?.trade?.t_vin_no || '',
+                    v_sales_mgr: doc.data().data?.v_sales_mgr || '',
+                    v_customer: doc.data().data?.v_customer || '',
+                    v_miles: doc.data().data?.vehicle?.v_miles || '',
                 }, true);
             })
         
