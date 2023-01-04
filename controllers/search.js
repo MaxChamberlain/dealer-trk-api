@@ -13,27 +13,27 @@ const searchGurusByVin = async (req, res, next) => {
     if (!isValidVIN) {
         return res.status(400).json({ message: 'Invalid VIN' });
     }
+    const browser = await puppeteer.launch({
+        headless: true,
+        args: [
+            '--incognito',
+            '--single-process',
+            '--no-zygote',
+            '--no-sandbox', 
+            '--disable-setuid-sandbox'
+        ],
+        defaultViewport: null,
+    });
     try{
-        const browser = await puppeteer.launch({
-            headless: true,
-            args: [
-                '--incognito',
-                '--single-process',
-                '--no-zygote',
-                '--no-sandbox', 
-                '--disable-setuid-sandbox'
-            ],
-            defaultViewport: null,
-        });
         let page = await browser.newPage()
         // send an HTTP error back on page error
         page.on('pageerror', err => {
             console.log('Page error: ' + err.toString());
-            throw new Error(err);
+            browser.close()
         });
         page.on('error', err => {
-            console.log('Page error: ' + err.toString());
-            throw new Error(err);
+            console.log('JavaScript error: ' + err.toString());
+            browser.close()
         });
         await page.goto(URL)
         await page.waitForSelector('#buyerZip')
@@ -61,12 +61,13 @@ const searchGurusByVin = async (req, res, next) => {
                 overPrice,
             };
         });
-        
-        await browser.close()
         res.status(200).send({VIN, ...prices, PRICE,});
     }catch(err){
         console.log('errorr', err)
         res.status(500).send(err);
+    } finally{
+        console.log('done')
+        await browser.close()
     }
 }
 
