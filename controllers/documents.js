@@ -188,8 +188,8 @@ const search = async (req, res) => {
         if (!docRef) {
             return res.status(304).send('Document not found');
         }
-        const document = docRef.docs[0].data()
-        res.status(200).send(document);
+        const documents = docRef.docs.map(doc => { return {...doc.data(), document_id: doc.id} })
+        res.status(200).send(documents);
     } catch (err) {
         console.log(err)
         res
