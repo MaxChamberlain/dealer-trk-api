@@ -30,7 +30,7 @@ const createCompany = async (req, res) => {
             company_zip,
             company_phone,
             company_carg_preference,
-            authorized_users: [{user_id}],
+            authorized_users: [{user_id, permLevel: 'admin'}],
             company_working_days
         });
         res.status(200).send(newCompany.id);
@@ -43,7 +43,7 @@ const createCompany = async (req, res) => {
 
 const addCompanyPermission = async (req, res) => {
     const { user_id } = req;
-    const { company_id, user_email } = req.body;
+    const { company_id, user_email, permLevel } = req.body;
     try {
         const db = getDB();
         const companiesRef = db.collection('companies');
@@ -54,7 +54,7 @@ const addCompanyPermission = async (req, res) => {
         const userData = user.docs[0].id;
         const newAuthorizedUsers = companyData.authorized_users;
         if(!newAuthorizedUsers.find(e => e.user_id === userData)) {
-            await companiesRef.doc(company_id).update({authorized_users: [...newAuthorizedUsers, {user_id: userData}]});
+            await companiesRef.doc(company_id).update({authorized_users: [...newAuthorizedUsers, {user_id: userData, permLevel: permLevel}]});
         }
         res.status(200).send('User added to company');
     }

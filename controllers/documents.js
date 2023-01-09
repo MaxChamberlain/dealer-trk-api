@@ -5,15 +5,21 @@ const getDocumentsByCompanyIds = async (req, res) => {
     const { startDate, endDate} = req.body;
     try {
         const db = getDB();
+
         const companiesRef = db.collection('companies')
         const companies = await companiesRef.get();
         const company_ids = companies.docs
             .filter(e => e.data().authorized_users.find(x => x.user_id === user_id))
             .map(company => company.id);
+
         const documentsRef = db.collection('documents').where('company_id', 'in', company_ids);
         const documents = await documentsRef.get();
-        const user_ids = [...new Set(documents.docs.map(e => e.data().metadata.created_by_user_id))].filter(e => e)
-        const users = await db.collection('users').where('__name__', 'in', user_ids).get();
+
+        const user_ids = companies.docs.map(company => company.data().authorized_users.map(user => user.user_id)).flat().filter(e => e);
+        
+        let users = await db.collection('users').get();
+        users.docs = users.docs.filter(e => user_ids.includes(e.id))
+
         res.status(200).send({data: documents.docs
             .filter(e => {
                 let date = e.data().metadata.created_at

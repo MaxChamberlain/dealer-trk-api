@@ -3,54 +3,47 @@ const bcrypt = require('bcryptjs');
 const { createToken, verifyToken } = require('../middlewares/jwt');
 
 const registerUser = async (req, res) => {
-    const { 
-        user_fname,
-        user_lname,
-        user_initial,
-        user_phone,
-        user_email,
-        user_password,
-    } = req.body;
-    let password = await bcrypt.hash(user_password, 10);
-    try {
-        const pool = getDB();
-        const result = await pool.query(
-            
-            `
-                INSERT INTO users 
-                (
-                    user_fname,
-                    user_lname,
-                    user_initial,
-                    user_phone,
-                    user_email,
-                    user_password
-                ) 
-                VALUES ($1, $2, $3, $4, $5, $6) 
-                RETURNING   user_fname,
-                            user_lname,
-                            user_initial,
-                            user_phone,
-                            user_email,
-                            user_id
-            `,
-            [
-                user_fname,
-                user_lname,
-                user_initial,
-                user_phone,
-                user_email,
-                password,
-            ]
-        );
-        const jwt = createToken(result.rows[0].user_id)
-        // create a cookie that expires in 1 hour
-        res.setHeader('Set-Cookie', `dash-auth-tokenjwtgrab=${jwt}; Max-Age=3600000; HttpOnly; SameSite=None; Secure; Path=/`);
-        res.status(200).send(result.rows[0]);
-    } catch (err) {
-        console.log(err)
-        res.status(500).send(err);
-    }
+	const {
+		user_fname,
+		user_lname,
+		user_initial,
+		user_phone,
+		user_email,
+		user_password,
+	} = req.body;
+	let password = await bcrypt.hash(user_password, 10);
+    const db = getDB();
+	try {
+		db
+			.collection('users')
+			.add({
+				user_fname,
+				user_lname,
+				user_initial,
+				user_phone,
+				user_email,
+				user_password: password,
+			})
+			.then((user) => {
+				const jwt = createToken(user.id);
+				// create a cookie that expires in 1 hour
+				res.setHeader(
+					'Set-Cookie',
+					`dash-auth-tokenjwtgrab=${jwt}; Max-Age=3600000; HttpOnly; SameSite=None; Secure; Path=/`
+				);
+				res.status(200).send({
+					user_fname,
+					user_lname,
+					user_initial,
+					user_phone,
+					user_email,
+					user_id: user.id,
+				});
+			});
+	} catch (err) {
+		console.log(err);
+		res.status(500).send(err);
+	}
 };
 
 const loginUser = async (req, res) => {
@@ -102,7 +95,7 @@ const getUserDetails = async (req, res) => {
         } else {
             const user = docs.data();
             delete user.user_password
-            res.status(200).send(user);
+            res.status(200).send({...user, user_id: docs.id});
         }
     } catch (err) {
         console.log(err)
